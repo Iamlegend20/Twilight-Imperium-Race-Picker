@@ -13,24 +13,7 @@ class Player:
         print(f'1.{self.choices[0]} or 2.{self.choices[1]}')
     def show_race(self):
         print(f'{self.name} is the {self.race}')
-    def choose_race(self):
-        print(f'{self.name} please select a race.')
-        self.show_numbered_choices() 
-        user_choice = get_user_choice(len(self.choices))
-        self.race = self.choices[user_choice]
-        print(f'{self.name} has selected {self.race}!')
-        unchosen_race = self.choices.pop(user_choice-1)
-        lower_tier_races.append(unchosen_race)
-        print(f'{unchosen_race} has been returned to the pool of lower tier of races.')
-        input('Press Enter to continue\n')
-    def last_player_choose(self, lower_tier_races):
-        random.shuffle(lower_tier_races)
-        random_race = lower_tier_races.pop()
-        self.choices.append(random_race)
-        print(f'{self.name} has been provided his second race from the unchosen races of the other players.')
-        input('Press Enter to continue.\n')
-        self.choose_race()
-        
+    
 def get_player_names():
     names = []
     while True:
@@ -83,7 +66,7 @@ def deal_first_race(players, upper_tier_races):
     for player in players:
         random_race = upper_tier_races.pop()
         player.choices.append(random_race)
-        
+                                                
 def deal_second_race(players, lower_tier_races):
     random.shuffle(lower_tier_races)
     index = 0
@@ -103,12 +86,33 @@ def show_player_choices(players):
         index += 1
     print('\n')
 
-def choose_races(players):
+def choose_races(players, lower_tier_races, last_player=False):
     index = 0
-    for x in range(len(players)-1):
-        players[index].choose_race()
+    a = 1
+    if last_player:
+        a = 0
+    for x in range(len(players) - a):
+        current_player = players[index]
+        print(f'{current_player.name} please select a race.')
+        current_player.show_numbered_choices() 
+        user_choice = get_user_choice(len(current_player.choices))
+        current_player.race = current_player.choices[user_choice]
+        print(f'{current_player.name} has selected {current_player.race}!')
+        unchosen_race = current_player.choices.pop(user_choice-1)
+        lower_tier_races.append(unchosen_race)
+        print(f'{unchosen_race} has been returned to the pool of lower tier of races.')
+        input('Press Enter to continue\n')
         index += 1
-
+        
+def last_player_choose(lower_tier_races, players):
+        random.shuffle(lower_tier_races)
+        random_race = lower_tier_races.pop()
+        last_player = players[-1]
+        last_player.choices.append(random_race)
+        print(f'{last_player.name} has been provided his second race from the unchosen races of the other players.')
+        input('Press Enter to continue.\n')
+        choose_races([players[-1]],lower_tier_races, last_player=True)        
+        
 def announce_results(players):
     for player in players:
         player.show_race()
@@ -121,14 +125,18 @@ def determine_neighbors(players):
         player.show_race()
     print('\nMay the strongest race emerge victorious!...\nMe')
 
-names = get_player_names()
-players = create_players(names)
-races = ban_races()
-upper_tier_races = races[:6]
-lower_tier_races = races[6:]
-deal_first_race(players, upper_tier_races)
-deal_second_race(players, lower_tier_races)
-show_player_choices(players)
-choose_races(players)
-players[-1].last_player_choose(lower_tier_races)
-determine_neighbors(players)
+def main():
+    names = get_player_names()
+    players = create_players(names)
+    races = ban_races()
+    upper_tier_races = races[:6]
+    lower_tier_races = races[6:]
+    deal_first_race(players, upper_tier_races)
+    deal_second_race(players, lower_tier_races)
+    show_player_choices(players)
+    choose_races(players,lower_tier_races)
+    last_player_choose(lower_tier_races,players)
+    determine_neighbors(players)
+
+if __name__ == '__main__':
+    main()
